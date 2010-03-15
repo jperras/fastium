@@ -1,0 +1,5 @@
+/*
+!/.gitignore
+!/config.m4
+!/php_inflector.h
+!/inflector.c
