@@ -16,8 +16,20 @@ extern zend_module_entry inflector_module_entry;
 #include "TSRM.h"
 #endif
 
+PHP_FUNCTION(underscore);
+
+
 /* Properties */
 #define PHP_INFLECTOR_EXTNAME "inflector"
 #define PHP_INFLECTOR_EXTVER  "0.1"
 
 #endif /* PHP_INFLECTOR_H */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
