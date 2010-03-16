@@ -1,5 +1,7 @@
+/* Includes */
 #include "php_inflector.h"
 
+/* Declare module entry */
 zend_module_entry inflector_module_entry = {
 	STANDARD_MODULE_HEADER,
 	PHP_INFLECTOR_EXTNAME,
