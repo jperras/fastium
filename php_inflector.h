@@ -17,6 +17,7 @@ extern zend_module_entry inflector_module_entry;
 #endif
 
 PHP_FUNCTION(underscore);
+PHP_FUNCTION(humanize);
 
 
 /* Properties */

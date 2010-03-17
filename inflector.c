@@ -2,10 +2,12 @@
 
 #include "php_inflector.h"
 #include "ext/standard/php_string.h"
+#include "ext/pcre/php_pcre.h"
 
 /* {{{ inflector_functions[] */
 static const function_entry inflector_functions[] = {
 	PHP_FE(underscore, NULL)
+	PHP_FE(humanize, NULL)
 	{ NULL, NULL, NULL }
 };
 /* }}} */
@@ -33,35 +35,75 @@ ZEND_GET_MODULE(inflector)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
 PHP_FUNCTION(underscore)
 {
-    char *word;
+	char *word = NULL;
 	int word_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE) {
-		RETVAL_NULL();
-		return;
+		RETURN_FALSE;
 	}
 
-	char *regexp   = "/(?<=\\w)([A-Z])/";
-	int regexp_len = sizeof(regexp) - 1;
+	if (!word_len) {
+		RETURN_EMPTY_STRING();
+	}
 
-	zval *replace;
 	char *result;
-	int  result_len;
+	int result_len = 0;
 
-	MAKE_STD_ZVAL(replace);
-	ZVAL_STRING(replace, "_\\1", 0);
+	zval *replace_val;
+	MAKE_STD_ZVAL(replace_val);
+	ZVAL_STRING(replace_val, "_\\1", 1);
 
-	php_strtolower(word, word_len);
-	result = php_pcre_replace(regexp, regexp_len, word, word_len, replace, 0, &result_len, -1, NULL TSRMLS_CC);
-	FREE_ZVAL(replace);
+	/* Perform regular expression replacement */
+	result = php_pcre_replace(
+		"/(?<=\\w)([A-Z])/",strlen("/(?<=\\w)([A-Z])/"),
+		word, word_len,
+		replace_val, 0, &result_len, -1, NULL TSRMLS_CC);
 
-	if (result == NULL) {
-		RETVAL_NULL();
-		return;
+	/* Make everything lowercase */
+	php_strtolower(result, result_len);
+
+	RETVAL_STRING(result ,1);
+
+	zval_ptr_dtor(&replace_val);
+	efree(result);
+	return;
+}
+/* }}} */
+
+/* {{{ proto string humanize(string)
+       Takes an under_scored version of a word and turns it into an human-readable form
+	   by replacing underscores with a space, and by upper casing the initial character. */
+PHP_FUNCTION(humanize)
+{
+	char *word = NULL;
+	int word_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE ){
+		RETURN_FALSE;
 	}
 
-	RETVAL_STRING(result, result_len);
+	if (!word_len) {
+		RETURN_EMPTY_STRING();
+	}
+
+	char *result;
+	int result_len;
+	register char *r, *r_end;
+
+	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
+	r = result;
+
+    *r = toupper((unsigned char) *r);
+    for (r_end = r + strlen(result) - 1; r < r_end; ) {
+        if (isspace((int) *(unsigned char *)r++)) {
+            *r = toupper((unsigned char) *r);
+        }
+    }
+
+	RETVAL_STRING(result, 1);
+	efree(result);
 	return;
+
 }
 /* }}} */
 
