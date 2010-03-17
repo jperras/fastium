@@ -36,7 +36,7 @@ ZEND_GET_MODULE(inflector)
 PHP_FUNCTION(underscore)
 {
 	char *word = NULL;
-	int word_len;
+	int word_len = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE) {
 		RETURN_FALSE;
@@ -46,7 +46,7 @@ PHP_FUNCTION(underscore)
 		RETURN_EMPTY_STRING();
 	}
 
-	char *result;
+	char *result = NULL;
 	int result_len = 0;
 
 	zval *replace_val;
@@ -62,7 +62,7 @@ PHP_FUNCTION(underscore)
 	/* Make everything lowercase */
 	php_strtolower(result, result_len);
 
-	RETVAL_STRING(result ,1);
+	RETVAL_STRINGL(result, result_len, 1);
 
 	zval_ptr_dtor(&replace_val);
 	efree(result);
