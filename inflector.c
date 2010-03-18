@@ -91,19 +91,29 @@ PHP_FUNCTION(humanize)
 	register char *r, *r_end;
 
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
-	r = result;
 
-    *r = toupper((unsigned char) *r);
-    for (r_end = r + strlen(result) - 1; r < r_end; ) {
-        if (isspace((int) *(unsigned char *)r++)) {
-            *r = toupper((unsigned char) *r);
-        }
-    }
+	zval *params[1], *func_name;
+	MAKE_STD_ZVAL(func_name);
+	ZVAL_STRING(func_name, "ucwords", 1);
 
-	RETVAL_STRING(result, 1);
+	MAKE_STD_ZVAL(params[0]);
+	ZVAL_STRING(params[0], result, 1);
+
+	if (call_user_function(EG(function_table), NULL,
+				func_name, return_value, 1, &params TSRMLS_CC) == FAILURE) {
+
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+				"Unable to call ucwords(). This shouldn't happen.");
+		RETVAL_FALSE;
+		goto cleanup;
+	}
+
+
+cleanup:
 	efree(result);
+	zval_ptr_dtor(&func_name);
+	zval_ptr_dtor(&params[0]);
 	return;
-
 }
 /* }}} */
 
