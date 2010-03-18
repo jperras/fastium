@@ -4,36 +4,12 @@
 #include "ext/standard/php_string.h"
 #include "ext/pcre/php_pcre.h"
 
-/* {{{ inflector_functions[] */
-static const function_entry inflector_functions[] = {
-	PHP_FE(underscore, NULL)
-	PHP_FE(humanize, NULL)
-	{ NULL, NULL, NULL }
-};
-/* }}} */
+/* Declarations */
+static zend_class_entry *inflector_ce = NULL;
 
-/* Declare module entry */
-zend_module_entry inflector_module_entry = {
-	STANDARD_MODULE_HEADER,
-	PHP_INFLECTOR_EXTNAME,
-	inflector_functions,     /* Functions  */
-	NULL,     /* MINIT */
-	NULL,     /* MSHUTDOWN */
-	NULL,     /* RINIT */
-	NULL,     /* RSHUTDOWN */
-	NULL,     /* MINFO */
-	PHP_INFLECTOR_EXTVER,
-	STANDARD_MODULE_PROPERTIES
-};
-
-#ifdef COMPILE_DL_INFLECTOR
-ZEND_GET_MODULE(inflector)
-#endif
-
-
-/* {{{ proto string underscore(string)
+/* {{{ proto string Inflector::underscore(string)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
-PHP_FUNCTION(underscore)
+static PHP_METHOD(Inflector, underscore)
 {
 	char *word = NULL;
 	int word_len = 0;
@@ -70,10 +46,10 @@ PHP_FUNCTION(underscore)
 }
 /* }}} */
 
-/* {{{ proto string humanize(string)
+/* {{{ proto string Inflector::humanize(string)
        Takes an under_scored version of a word and turns it into an human-readable form
 	   by replacing underscores with a space, and by upper casing the initial character. */
-PHP_FUNCTION(humanize)
+static PHP_METHOD(Inflector, humanize)
 {
 	char *word = NULL;
 	int word_len;
@@ -88,19 +64,17 @@ PHP_FUNCTION(humanize)
 
 	char *result;
 	int result_len;
-	register char *r, *r_end;
-
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 
-	zval *params[1], *func_name;
-	MAKE_STD_ZVAL(func_name);
-	ZVAL_STRING(func_name, "ucwords", 1);
+	zval *params[1], *fname;
+	MAKE_STD_ZVAL(fname);
+	ZVAL_STRING(fname, "ucwords", 1);
 
 	MAKE_STD_ZVAL(params[0]);
-	ZVAL_STRING(params[0], result, 1);
+	ZVAL_STRINGL(params[0], result, result_len, 1);
 
 	if (call_user_function(EG(function_table), NULL,
-				func_name, return_value, 1, &params TSRMLS_CC) == FAILURE) {
+				fname, return_value, 1, &params TSRMLS_CC) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 				"Unable to call ucwords(). This shouldn't happen.");
@@ -108,13 +82,67 @@ PHP_FUNCTION(humanize)
 		goto cleanup;
 	}
 
-
 cleanup:
 	efree(result);
-	zval_ptr_dtor(&func_name);
+	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&params[0]);
 	return;
 }
 /* }}} */
 
-/* vim: set tabstop=4 softtabstop=4 shiftwidth=4 textwidth=100 smarttab noexpandtab smartindent: */
+/* {{{ inflector_functions[] */
+static function_entry inflector_class_methods[] = {
+	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	{ NULL, NULL, NULL }
+};
+/* }}} */
+
+/* {{{ inflector_module_entry  */
+zend_module_entry inflector_module_entry = {
+	STANDARD_MODULE_HEADER,
+	PHP_INFLECTOR_EXTNAME,
+	NULL,     /* Functions  */
+	PHP_MINIT(inflector),     /* MINIT */
+	NULL,     /* MSHUTDOWN */
+	NULL,     /* RINIT */
+	NULL,     /* RSHUTDOWN */
+	PHP_MINFO(inflector),     /* MINFO */
+	PHP_INFLECTOR_EXTVER,
+	STANDARD_MODULE_PROPERTIES
+};
+/* }}} */
+
+/* {{{ PHP_MINIT_FUNCTION */
+PHP_MINIT_FUNCTION(inflector)
+{
+    zend_class_entry ce;
+    INIT_CLASS_ENTRY(ce, PHP_INFLECTOR_EXTNAME, inflector_class_methods);
+    inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
+    return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_MINFO_FUNCTION */
+PHP_MINFO_FUNCTION(inflector)
+{
+	php_info_print_table_start();
+	php_info_print_table_header(2, PHP_INFLECTOR_EXTNAME, "enabled");
+    php_info_print_table_row(2, "Version", PHP_INFLECTOR_EXTVER);
+	php_info_print_table_end();
+}
+
+#ifdef COMPILE_DL_INFLECTOR
+ZEND_GET_MODULE(inflector)
+#endif
+/* }}} */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

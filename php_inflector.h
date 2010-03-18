@@ -18,10 +18,12 @@ extern zend_module_entry inflector_module_entry;
 
 PHP_FUNCTION(underscore);
 PHP_FUNCTION(humanize);
+PHP_MINIT_FUNCTION(inflector);
+PHP_MINFO_FUNCTION(inflector);
 
 
 /* Properties */
-#define PHP_INFLECTOR_EXTNAME "inflector"
+#define PHP_INFLECTOR_EXTNAME "Inflector"
 #define PHP_INFLECTOR_EXTVER  "0.1"
 
 #endif /* PHP_INFLECTOR_H */
