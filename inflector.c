@@ -53,8 +53,10 @@ static PHP_METHOD(Inflector, humanize)
 {
 	char *word = NULL;
 	int word_len;
+	char *separator = "_";
+	int separator_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE ){
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &word, &word_len, &separator, &separator_len) == FAILURE) {
 		RETURN_FALSE;
 	}
 
@@ -64,7 +66,7 @@ static PHP_METHOD(Inflector, humanize)
 
 	char *result;
 	int result_len;
-	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
+	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
 
 	zval *params[1], *fname;
 	MAKE_STD_ZVAL(fname);
