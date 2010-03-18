@@ -18,6 +18,7 @@ extern zend_module_entry inflector_module_entry;
 
 PHP_FUNCTION(underscore);
 PHP_FUNCTION(humanize);
+PHP_FUNCTION(camelize);
 PHP_MINIT_FUNCTION(inflector);
 PHP_MINFO_FUNCTION(inflector);
 

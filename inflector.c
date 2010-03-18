@@ -90,10 +90,61 @@ cleanup:
 }
 /* }}} */
 
+/* {{{ proto string lithium\util\Inflector::camelize(string, string) */
+static PHP_METHOD(Inflector, camelize)
+{
+	char *word = NULL;
+	int word_len;
+	zend_bool cased = 1;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &word, &word_len, &cased) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (!word_len) {
+		RETURN_EMPTY_STRING();
+	}
+
+	char *result, *result2;
+	int result_len, result2_len;
+	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
+
+	zval *params[1], *fname;
+	MAKE_STD_ZVAL(fname);
+	ZVAL_STRING(fname, "ucwords", 1);
+
+	MAKE_STD_ZVAL(params[0]);
+	ZVAL_STRINGL(params[0], result, result_len, 1);
+
+	if (call_user_function(EG(function_table), NULL,
+				fname, &result2, 1, &params TSRMLS_CC) == FAILURE) {
+
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+				"Unable to call ucwords(). This shouldn't happen.");
+		RETVAL_FALSE;
+		goto cleanup;
+	}
+
+	RETVAL_STRINGL(result, result_len, 1);
+	goto cleanup;
+
+	result2 = php_str_to_str(result, result_len, " ", 1, "", 0, &result2_len);
+	RETVAL_STRINGL(result2, result2_len, 1);
+
+cleanup:
+	efree(result);
+	efree(result2);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&params[0]);
+	return;
+}
+/* }}} */
+
 /* {{{ inflector_functions[] */
 static function_entry inflector_class_methods[] = {
 	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Inflector, camelize,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	{ NULL, NULL, NULL }
 };
 /* }}} */
