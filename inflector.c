@@ -110,14 +110,16 @@ static PHP_METHOD(Inflector, camelize)
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 
 	zval *params[1], *fname;
+	zval *callresult;
 	MAKE_STD_ZVAL(fname);
 	ZVAL_STRING(fname, "ucwords", 1);
 
+	MAKE_STD_ZVAL(callresult);
 	MAKE_STD_ZVAL(params[0]);
 	ZVAL_STRINGL(params[0], result, result_len, 1);
 
 	if (call_user_function(EG(function_table), NULL,
-				fname, &result2, 1, &params TSRMLS_CC) == FAILURE) {
+				fname, callresult, 1, &params TSRMLS_CC) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 				"Unable to call ucwords(). This shouldn't happen.");
@@ -125,15 +127,13 @@ static PHP_METHOD(Inflector, camelize)
 		goto cleanup;
 	}
 
-	RETVAL_STRINGL(result, result_len, 1);
-	goto cleanup;
-
-	result2 = php_str_to_str(result, result_len, " ", 1, "", 0, &result2_len);
+	result2 = php_str_to_str(Z_STRVAL_P(callresult), result_len, " ", 1, "", 0, &result2_len);
 	RETVAL_STRINGL(result2, result2_len, 1);
 
 cleanup:
 	efree(result);
 	efree(result2);
+	efree(callresult);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&params[0]);
 	return;
