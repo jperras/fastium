@@ -7,7 +7,7 @@
 /* Declarations */
 static zend_class_entry *inflector_ce = NULL;
 
-/* {{{ proto string Inflector::underscore(string)
+/* {{{ proto string lithium\util\Inflector::underscore(string)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
 static PHP_METHOD(Inflector, underscore)
 {
@@ -46,7 +46,7 @@ static PHP_METHOD(Inflector, underscore)
 }
 /* }}} */
 
-/* {{{ proto string Inflector::humanize(string)
+/* {{{ proto string lithium\util\Inflector::humanize(string)
        Takes an under_scored version of a word and turns it into an human-readable form
 	   by replacing underscores with a space, and by upper casing the initial character. */
 static PHP_METHOD(Inflector, humanize)
@@ -117,7 +117,7 @@ zend_module_entry inflector_module_entry = {
 PHP_MINIT_FUNCTION(inflector)
 {
     zend_class_entry ce;
-    INIT_CLASS_ENTRY(ce, PHP_INFLECTOR_EXTNAME, inflector_class_methods);
+    INIT_NS_CLASS_ENTRY(ce, "lithium\\util", PHP_INFLECTOR_EXTNAME, inflector_class_methods);
     inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
     return SUCCESS;
