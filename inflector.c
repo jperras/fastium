@@ -51,10 +51,8 @@ static PHP_METHOD(Inflector, underscore)
 	   by replacing underscores with a space, and by upper casing the initial character. */
 static PHP_METHOD(Inflector, humanize)
 {
-	char *word = NULL;
-	int word_len;
-	char *separator = "_";
-	int separator_len;
+	char *word = NULL, *separator = "_";
+	int word_len, separator_len = 1;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &word, &word_len, &separator, &separator_len) == FAILURE) {
 		RETURN_FALSE;
