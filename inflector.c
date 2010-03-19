@@ -133,7 +133,7 @@ static PHP_METHOD(Inflector, camelize)
 cleanup:
 	efree(result);
 	efree(result2);
-	efree(callresult);
+	zval_ptr_dtor(&callresult);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&params[0]);
 	return;
