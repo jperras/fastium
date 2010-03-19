@@ -109,25 +109,29 @@ static PHP_METHOD(Inflector, camelize)
 	int result_len, result2_len;
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 
-	zval *params[1], *fname;
-	zval *callresult;
+	zval *params[1], *fname, *callresult;
 	MAKE_STD_ZVAL(fname);
-	ZVAL_STRING(fname, "ucwords", 1);
-
 	MAKE_STD_ZVAL(callresult);
 	MAKE_STD_ZVAL(params[0]);
+
+	ZVAL_STRING(fname, "ucwords", 1);
 	ZVAL_STRINGL(params[0], result, result_len, 1);
 
 	if (call_user_function(EG(function_table), NULL,
-				fname, callresult, 1, &params TSRMLS_CC) == FAILURE) {
+		fname, callresult, 1, &params TSRMLS_CC) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
-				"Unable to call ucwords(). This shouldn't happen.");
-		RETVAL_FALSE;
+			"Unable to call ucwords(). This shouldn't happen.");
 		goto cleanup;
 	}
-
 	result2 = php_str_to_str(Z_STRVAL_P(callresult), result_len, " ", 1, "", 0, &result2_len);
+
+	if (cased != 1) {
+		register char *r;
+		r = result2;
+		*r = tolower((unsigned char) *r);
+	}
+
 	RETVAL_STRINGL(result2, result2_len, 1);
 
 cleanup:
