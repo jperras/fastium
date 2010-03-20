@@ -144,11 +144,41 @@ cleanup:
 }
 /* }}} */
 
+/* {{{
+   Enclose a string for preg matching. */
+static char * _enclose(char *str, int str_len)
+{
+	char *str1 = "(?:";
+	char *str2 = ")";
+	char *result;
+
+	result = (char *) emalloc((strlen(str1) + strlen(str2) + str_len + 1) *sizeof(char));
+
+	strcpy(result, str1);
+	strcat(result, str);
+	strcat(result, str2);
+
+	return result;
+}
+/* }}} */
+
+static PHP_METHOD(Inflector, enclose)
+{
+	char *word = NULL;
+	int word_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+	RETURN_STRING(_enclose(word, word_len), 1);
+}
+
 /* {{{ inflector_functions[] */
 static function_entry inflector_class_methods[] = {
-	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-	PHP_ME(Inflector, camelize,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(Inflector, camelize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(Inflector, enclose,    NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{ NULL, NULL, NULL }
 };
 /* }}} */
