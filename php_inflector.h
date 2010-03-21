@@ -25,7 +25,7 @@ PHP_MINFO_FUNCTION(inflector);
 
 
 /* Properties */
-#define PHP_INFLECTOR_EXTNAME "Inflector"
+#define PHP_INFLECTOR_EXTNAME "fastium"
 #define PHP_INFLECTOR_EXTVER  "0.1"
 
 #endif /* PHP_INFLECTOR_H */

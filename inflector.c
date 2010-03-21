@@ -146,7 +146,7 @@ cleanup:
 
 /* {{{
    Enclose a string for preg matching. */
-static char * _enclose(char *str, int str_len)
+static char * _regex_enclose(char *str, int str_len)
 {
 	char *str1 = "(?:";
 	char *str2 = ")";
@@ -170,7 +170,7 @@ static PHP_METHOD(Inflector, enclose)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE) {
 		RETURN_FALSE;
 	}
-	RETURN_STRING(_enclose(word, word_len), 1);
+	RETURN_STRING(_regex_enclose(word, word_len), 1);
 }
 
 /* {{{ inflector_functions[] */
@@ -201,11 +201,11 @@ zend_module_entry inflector_module_entry = {
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(inflector)
 {
-    zend_class_entry ce;
-    INIT_NS_CLASS_ENTRY(ce, "lithium\\util", PHP_INFLECTOR_EXTNAME, inflector_class_methods);
-    inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	zend_class_entry ce;
+	INIT_NS_CLASS_ENTRY(ce, "lithium\\util", "Inflector", inflector_class_methods);
+	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-    return SUCCESS;
+	return SUCCESS;
 }
 /* }}} */
 
@@ -213,7 +213,8 @@ PHP_MINIT_FUNCTION(inflector)
 PHP_MINFO_FUNCTION(inflector)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, PHP_INFLECTOR_EXTNAME, "enabled");
+	php_info_print_table_header(2, PHP_INFLECTOR_EXTNAME, "Zoooom!");
+	php_info_print_table_row(2, "Speed", "enabled");
     php_info_print_table_row(2, "Version", PHP_INFLECTOR_EXTVER);
 	php_info_print_table_end();
 }

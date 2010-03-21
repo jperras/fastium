@@ -1,7 +1,7 @@
 --TEST--
 Inflector::humanize()
 --SKIPIF--
-<?php if (!extension_loaded('inflector')) print "skip"; ?>
+<?php if (!extension_loaded('fastium')) print "skip"; ?>
 --FILE--
 <?php
 use lithium\util\Inflector;
