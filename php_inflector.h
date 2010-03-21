@@ -16,6 +16,9 @@ extern zend_module_entry inflector_module_entry;
 #include "TSRM.h"
 #endif
 
+// ZEND_BEGIN_MODULE_GLOBALS(inflector)
+// ZEND_END_MODULE_GLOBALS(inflector)
+
 PHP_FUNCTION(underscore);
 PHP_FUNCTION(humanize);
 PHP_FUNCTION(camelize);

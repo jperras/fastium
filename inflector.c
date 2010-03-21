@@ -3,9 +3,15 @@
 #include "php_inflector.h"
 #include "ext/standard/php_string.h"
 #include "ext/pcre/php_pcre.h"
+#include "Zend/zend_hash.h"
 
 /* Declarations */
 static zend_class_entry *inflector_ce = NULL;
+
+static HashTable inflector_underscore_cache;
+static HashTable inflector_humanize_cache;
+static HashTable inflector_camelize_cache;
+static HashTable inflector_camelize_under_cache;
 
 /* {{{ proto string lithium\util\Inflector::underscore(string)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
@@ -20,6 +26,13 @@ static PHP_METHOD(Inflector, underscore)
 
 	if (!word_len) {
 		RETURN_EMPTY_STRING();
+	}
+
+	if (zend_hash_exists(&inflector_underscore_cache, word, word_len)) {
+		zval **data;
+		if (zend_hash_find(&inflector_underscore_cache, word, word_len, (void **) &data) == SUCCESS) {
+			RETURN_STRING(data, 1);
+		}
 	}
 
 	char *result = NULL;
@@ -39,6 +52,7 @@ static PHP_METHOD(Inflector, underscore)
 	php_strtolower(result, result_len);
 
 	RETVAL_STRINGL(result, result_len, 1);
+	zend_hash_add(&inflector_underscore_cache, word, word_len, result, result_len, NULL);
 
 	zval_ptr_dtor(&replace_val);
 	efree(result);
@@ -62,6 +76,13 @@ static PHP_METHOD(Inflector, humanize)
 		RETURN_EMPTY_STRING();
 	}
 
+	if (zend_hash_exists(&inflector_humanize_cache, word, word_len)) {
+		zval **data;
+		if (zend_hash_find(&inflector_humanize_cache, word, word_len, (void **) &data) == SUCCESS) {
+			RETURN_STRING(data, 1);
+		}
+	}
+
 	char *result;
 	int result_len;
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
@@ -81,6 +102,8 @@ static PHP_METHOD(Inflector, humanize)
 		RETVAL_FALSE;
 		goto cleanup;
 	}
+	zend_hash_add(&inflector_humanize_cache, word, word_len,
+		return_value, strlen(return_value), NULL);
 
 cleanup:
 	efree(result);
@@ -103,6 +126,19 @@ static PHP_METHOD(Inflector, camelize)
 
 	if (!word_len) {
 		RETURN_EMPTY_STRING();
+	}
+
+	if (cased == 1 && zend_hash_exists(&inflector_camelize_cache, word, word_len)) {
+		zval **data;
+		if (zend_hash_find(&inflector_camelize_cache, word, word_len, (void **) &data) == SUCCESS) {
+			RETURN_STRING(data, 1);
+		}
+	}
+	if (cased == 0 && zend_hash_exists(&inflector_camelize_under_cache, word, word_len)) {
+		zval **data;
+		if (zend_hash_find(&inflector_camelize_under_cache, word, word_len, (void **) &data) == SUCCESS) {
+			RETURN_STRING(data, 1);
+		}
 	}
 
 	char *result, *result2;
@@ -130,6 +166,10 @@ static PHP_METHOD(Inflector, camelize)
 		register char *r;
 		r = result2;
 		*r = tolower((unsigned char) *r);
+
+		zend_hash_add(&inflector_camelize_under_cache, word, word_len, result2, result2_len, NULL);
+	} else {
+		zend_hash_add(&inflector_camelize_cache, word, word_len, result2, result2_len, NULL);
 	}
 
 	RETVAL_STRINGL(result2, result2_len, 1);
@@ -204,6 +244,11 @@ PHP_MINIT_FUNCTION(inflector)
 	zend_class_entry ce;
 	INIT_NS_CLASS_ENTRY(ce, "lithium\\util", "Inflector", inflector_class_methods);
 	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
+	zend_hash_init(&inflector_underscore_cache, 0, NULL, NULL, 1);
+	zend_hash_init(&inflector_humanize_cache, 0, NULL, NULL, 1);
+	zend_hash_init(&inflector_camelize_cache, 0, NULL, NULL, 1);
+	zend_hash_init(&inflector_camelize_under_cache, 0, NULL, NULL, 1);
 
 	return SUCCESS;
 }
