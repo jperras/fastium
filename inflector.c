@@ -134,11 +134,10 @@ cleanup:
 /* {{{ proto string lithium\util\Inflector::camelize(string, string) */
 static PHP_METHOD(Inflector, camelize)
 {
-	register char *r;
+	register char *r, *r_end;
 	char *word, *result, *result2;
 	int word_len, result_len, result2_len;
 	zend_bool cased = 1;
-	zval *params[1], *fname, *callresult;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &word, &word_len, &cased) == FAILURE) {
 		RETURN_FALSE;
@@ -162,24 +161,18 @@ static PHP_METHOD(Inflector, camelize)
 			RETURN_STRING(cache, 1);
 		}
 	}
-
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 
-	MAKE_STD_ZVAL(fname);
-	MAKE_STD_ZVAL(callresult);
-	MAKE_STD_ZVAL(params[0]);
+	r = result;
+	*r = toupper((unsigned char) *r);
 
-	ZVAL_STRING(fname, "ucwords", 1);
-	ZVAL_STRINGL(params[0], result, result_len, 1);
-
-	if (call_user_function(EG(function_table), NULL,
-		fname, callresult, 1, params TSRMLS_CC) == FAILURE) {
-
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
-			"Unable to call ucwords(). This shouldn't happen.");
-		goto cleanup;
+	for (r_end = r + result_len - 1; r < r_end; ) {
+		if (isspace((int) *(unsigned char *)r++)) {
+			*r = toupper((unsigned char) *r);
+		}
 	}
-	result2 = php_str_to_str(Z_STRVAL_P(callresult), result_len, " ", 1, "", 0, &result2_len);
+
+	result2 = php_str_to_str(result, result_len, " ", 1, "", 0, &result2_len);
 
 	if (cased != 1) {
 		r = result2;
@@ -194,9 +187,6 @@ static PHP_METHOD(Inflector, camelize)
 cleanup:
 	efree(result);
 	efree(result2);
-	zval_ptr_dtor(&callresult);
-	zval_ptr_dtor(&fname);
-	zval_ptr_dtor(&params[0]);
 	return;
 }
 /* }}} */
