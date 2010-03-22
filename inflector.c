@@ -13,12 +13,38 @@ static HashTable inflector_humanize_cache;
 static HashTable inflector_camelize_cache;
 static HashTable inflector_camelize_under_cache;
 
+/*
+ * Static helper functions.
+ * @todo Move to separate .h/.c files.
+ */
+
+/* {{{ _regex_enclose(char*, int)
+   Enclose a string for preg matching. */
+static char * _regex_enclose(char *str, int str_len)
+{
+	char *str1 = "(?:";
+	char *str2 = ")";
+	char *result;
+
+	result = (char *) emalloc((strlen(str1) + strlen(str2) + str_len + 1) *sizeof(char));
+
+	strcpy(result, str1);
+	strcat(result, str);
+	strcat(result, str2);
+
+	return result;
+}
+/* }}} */
+
+/* PHP METHODS */
+
 /* {{{ proto string lithium\util\Inflector::underscore(string)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
 static PHP_METHOD(Inflector, underscore)
 {
-	char *word = NULL;
-	int word_len = 0;
+	char *word = NULL, *result = NULL;
+	int word_len = 0, result_len = 0;
+	zval *replace_val;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &word, &word_len) == FAILURE) {
 		RETURN_FALSE;
@@ -35,10 +61,6 @@ static PHP_METHOD(Inflector, underscore)
 		}
 	}
 
-	char *result = NULL;
-	int result_len = 0;
-
-	zval *replace_val;
 	MAKE_STD_ZVAL(replace_val);
 	ZVAL_STRING(replace_val, "_\\1", 1);
 
@@ -65,8 +87,9 @@ static PHP_METHOD(Inflector, underscore)
 	   by replacing underscores with a space, and by upper casing the initial character. */
 static PHP_METHOD(Inflector, humanize)
 {
-	char *word = NULL, *separator = "_";
-	int word_len, separator_len = 1;
+	char *word = NULL, *separator = "_", *result = NULL;
+	int word_len, separator_len = 1, result_len;
+	zval *params[1], *fname;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &word, &word_len, &separator, &separator_len) == FAILURE) {
 		RETURN_FALSE;
@@ -83,14 +106,10 @@ static PHP_METHOD(Inflector, humanize)
 		}
 	}
 
-	char *result;
-	int result_len;
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
 
-	zval *params[1], *fname;
 	MAKE_STD_ZVAL(fname);
 	ZVAL_STRING(fname, "ucwords", 1);
-
 	MAKE_STD_ZVAL(params[0]);
 	ZVAL_STRINGL(params[0], result, result_len, 1);
 
@@ -116,9 +135,11 @@ cleanup:
 /* {{{ proto string lithium\util\Inflector::camelize(string, string) */
 static PHP_METHOD(Inflector, camelize)
 {
-	char *word = NULL;
-	int word_len;
+	register char *r;
+	char *word, *result, *result2;
+	int word_len, result_len, result2_len;
 	zend_bool cased = 1;
+	zval *params[1], *fname, *callresult;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &word, &word_len, &cased) == FAILURE) {
 		RETURN_FALSE;
@@ -141,11 +162,8 @@ static PHP_METHOD(Inflector, camelize)
 		}
 	}
 
-	char *result, *result2;
-	int result_len, result2_len;
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 
-	zval *params[1], *fname, *callresult;
 	MAKE_STD_ZVAL(fname);
 	MAKE_STD_ZVAL(callresult);
 	MAKE_STD_ZVAL(params[0]);
@@ -163,10 +181,8 @@ static PHP_METHOD(Inflector, camelize)
 	result2 = php_str_to_str(Z_STRVAL_P(callresult), result_len, " ", 1, "", 0, &result2_len);
 
 	if (cased != 1) {
-		register char *r;
 		r = result2;
 		*r = tolower((unsigned char) *r);
-
 		zend_hash_add(&inflector_camelize_under_cache, word, word_len, result2, result2_len, NULL);
 	} else {
 		zend_hash_add(&inflector_camelize_cache, word, word_len, result2, result2_len, NULL);
@@ -184,24 +200,7 @@ cleanup:
 }
 /* }}} */
 
-/* {{{
-   Enclose a string for preg matching. */
-static char * _regex_enclose(char *str, int str_len)
-{
-	char *str1 = "(?:";
-	char *str2 = ")";
-	char *result;
-
-	result = (char *) emalloc((strlen(str1) + strlen(str2) + str_len + 1) *sizeof(char));
-
-	strcpy(result, str1);
-	strcat(result, str);
-	strcat(result, str2);
-
-	return result;
-}
-/* }}} */
-
+/* {{{ proto lithium\util\Inflector::enclose(string) */
 static PHP_METHOD(Inflector, enclose)
 {
 	char *word = NULL;
@@ -212,6 +211,9 @@ static PHP_METHOD(Inflector, enclose)
 	}
 	RETURN_STRING(_regex_enclose(word, word_len), 1);
 }
+/* }}} */
+
+/* EXTENSION DIRECTIVES */
 
 /* {{{ inflector_functions[] */
 static function_entry inflector_class_methods[] = {
@@ -242,7 +244,7 @@ zend_module_entry inflector_module_entry = {
 PHP_MINIT_FUNCTION(inflector)
 {
 	zend_class_entry ce;
-	INIT_NS_CLASS_ENTRY(ce, "lithium\\util", "Inflector", inflector_class_methods);
+	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", inflector_class_methods);
 	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	zend_hash_init(&inflector_underscore_cache, 0, NULL, NULL, 1);
