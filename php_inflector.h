@@ -24,6 +24,7 @@ PHP_FUNCTION(humanize);
 PHP_FUNCTION(camelize);
 PHP_FUNCTION(enclose);
 PHP_MINIT_FUNCTION(inflector);
+PHP_MSHUTDOWN_FUNCTION(inflector);
 PHP_MINFO_FUNCTION(inflector);
 
 

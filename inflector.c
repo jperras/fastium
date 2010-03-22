@@ -250,6 +250,33 @@ PHP_MINIT_FUNCTION(inflector)
 	zend_hash_init(&inflector_camelize_cache, 0, NULL, NULL, 1);
 	zend_hash_init(&inflector_camelize_under_cache, 0, NULL, NULL, 1);
 
+	// ALLOC_HASHTABLE(inflector_underscore_cache);
+	// ALLOC_HASHTABLE(inflector_humanize_cache);
+	// ALLOC_HASHTABLE(inflector_camelize_cache);
+	// ALLOC_HASHTABLE(inflector_camelize_under_cache);
+
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_MSHUTDOWN_FUNCTION */
+PHP_MSHUTDOWN_FUNCTION(inflector)
+{
+	zend_hash_destroy(&inflector_underscore_cache);
+	zend_hash_destroy(&inflector_humanize_cache);
+	zend_hash_destroy(&inflector_camelize_cache);
+	zend_hash_destroy(&inflector_camelize_under_cache);
+
+	// FREE_HASHTABLE(inflector_underscore_cache);
+	// FREE_HASHTABLE(inflector_humanize_cache);
+	// FREE_HASHTABLE(inflector_camelize_cache);
+	// FREE_HASHTABLE(inflector_camelize_under_cache);
+
+	// inflector_underscore_cache = NULL;
+	// inflector_humanize_cache = NULL;
+	// inflector_camelize_cache = NULL;
+	// inflector_camelize_under_cache = NULL;
+
 	return SUCCESS;
 }
 /* }}} */
