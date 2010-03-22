@@ -23,8 +23,19 @@ extern zend_module_entry inflector_module_entry;
 #endif
 /* }}} */
 
-// ZEND_BEGIN_MODULE_GLOBALS(inflector)
-// ZEND_END_MODULE_GLOBALS(inflector)
+ZEND_BEGIN_MODULE_GLOBALS(inflector)
+	HashTable *underscore_cache;
+	HashTable *humanize_cache;
+	HashTable *camelize_cache;
+	HashTable *camelize_under_cache;
+ZEND_END_MODULE_GLOBALS(inflector)
+
+#ifdef ZTS
+#define INFLECTOR_G(v) TSRMG(inflector_globals_id, zend_inflector_globals *, v)
+#else
+#define INFLECTOR_G(v) (inflector_globals.v)
+#endif
+
 
 /* {{{ Forward declarations */
 
