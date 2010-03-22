@@ -52,9 +52,10 @@ static PHP_METHOD(Inflector, underscore)
 	}
 
 	if (zend_hash_exists(INFLECTOR_G(underscore_cache), word, word_len)) {
-		zval **data;
-		if (zend_hash_find(INFLECTOR_G(underscore_cache), word, word_len, (void **) &data) == SUCCESS) {
-			RETURN_STRING(data, 1);
+		zval **cache;
+		if (zend_hash_find(INFLECTOR_G(underscore_cache), word, word_len, (void **) &cache) == SUCCESS) {
+			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
+			RETURN_STRING(cache, 1);
 		}
 	}
 
@@ -97,9 +98,10 @@ static PHP_METHOD(Inflector, humanize)
 	}
 
 	if (zend_hash_exists(INFLECTOR_G(humanize_cache), word, word_len)) {
-		zval **data;
-		if (zend_hash_find(INFLECTOR_G(humanize_cache), word, word_len, (void **) &data) == SUCCESS) {
-			RETURN_STRING(data, 1);
+		zval **cache;
+		if (zend_hash_find(INFLECTOR_G(humanize_cache), word, word_len, (void **) &cache) == SUCCESS) {
+			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 1);
+			RETURN_STRING(cache, 1);
 		}
 	}
 
@@ -111,14 +113,15 @@ static PHP_METHOD(Inflector, humanize)
 	ZVAL_STRINGL(params[0], result, result_len, 1);
 
 	if (call_user_function(EG(function_table), NULL,
-				fname, return_value, 1, &params TSRMLS_CC) == FAILURE) {
+				fname, return_value, 1, params TSRMLS_CC) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 				"Unable to call ucwords(). This shouldn't happen.");
 		RETVAL_FALSE;
 		goto cleanup;
 	}
-	zend_hash_add(INFLECTOR_G(humanize_cache), word, word_len, return_value, strlen(return_value), NULL);
+	zend_hash_add(INFLECTOR_G(humanize_cache), word, word_len,
+		Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), NULL);
 
 cleanup:
 	efree(result);
@@ -146,15 +149,17 @@ static PHP_METHOD(Inflector, camelize)
 	}
 
 	if (cased == 1 && zend_hash_exists(INFLECTOR_G(camelize_cache), word, word_len)) {
-		zval **data;
-		if (zend_hash_find(INFLECTOR_G(camelize_cache), word, word_len, (void **) &data) == SUCCESS) {
-			RETURN_STRING(data, 1);
+		zval **cache;
+		if (zend_hash_find(INFLECTOR_G(camelize_cache), word, word_len, (void **) &cache) == SUCCESS) {
+			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
+			RETURN_STRING(cache, 1);
 		}
 	}
 	if (cased == 0 && zend_hash_exists(INFLECTOR_G(camelize_under_cache), word, word_len)) {
-		zval **data;
-		if (zend_hash_find(INFLECTOR_G(camelize_under_cache), word, word_len, (void **) &data) == SUCCESS) {
-			RETURN_STRING(data, 1);
+		zval **cache;
+		if (zend_hash_find(INFLECTOR_G(camelize_under_cache), word, word_len, (void **) &cache) == SUCCESS) {
+			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
+			RETURN_STRING(cache, 1);
 		}
 	}
 
@@ -168,7 +173,7 @@ static PHP_METHOD(Inflector, camelize)
 	ZVAL_STRINGL(params[0], result, result_len, 1);
 
 	if (call_user_function(EG(function_table), NULL,
-		fname, callresult, 1, &params TSRMLS_CC) == FAILURE) {
+		fname, callresult, 1, params TSRMLS_CC) == FAILURE) {
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 			"Unable to call ucwords(). This shouldn't happen.");
