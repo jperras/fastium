@@ -5,10 +5,10 @@
 #include "ext/pcre/php_pcre.h"
 #include "Zend/zend_hash.h"
 
+ZEND_DECLARE_MODULE_GLOBALS(inflector);
+
 /* Declarations */
 static zend_class_entry *inflector_ce = NULL;
-
-ZEND_DECLARE_MODULE_GLOBALS(inflector);
 
 /*
  * Static helper functions.

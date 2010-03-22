@@ -24,10 +24,10 @@ extern zend_module_entry inflector_module_entry;
 /* }}} */
 
 ZEND_BEGIN_MODULE_GLOBALS(inflector)
-	HashTable *underscore_cache;
-	HashTable *humanize_cache;
-	HashTable *camelize_cache;
-	HashTable *camelize_under_cache;
+HashTable *underscore_cache;
+HashTable *humanize_cache;
+HashTable *camelize_cache;
+HashTable *camelize_under_cache;
 ZEND_END_MODULE_GLOBALS(inflector)
 
 #ifdef ZTS
