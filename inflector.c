@@ -248,6 +248,14 @@ PHP_MINIT_FUNCTION(inflector)
 	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", inflector_class_methods);
 	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
+	int flags;
+	flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
+
+	zend_declare_property_null(inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
+	zend_declare_property_null(inflector_ce , ZEND_STRL("_uninflected"), flags TSRMLS_CC);
+	zend_declare_property_null(inflector_ce , ZEND_STRL("_singular"), flags TSRMLS_CC);
+	zend_declare_property_null(inflector_ce , ZEND_STRL("_plural"), flags TSRMLS_CC);
+
 	ALLOC_HASHTABLE(INFLECTOR_G(underscore_cache));
 	ALLOC_HASHTABLE(INFLECTOR_G(humanize_cache));
 	ALLOC_HASHTABLE(INFLECTOR_G(camelize_cache));
