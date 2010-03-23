@@ -15,7 +15,37 @@ static zend_class_entry *fastium_inflector_ce = NULL;
  * @todo Move to separate .h/.c files.
  */
 
-/* {{{ static char * _regex_enclose(char*, int)
+/* {{{ write_rule(char*, zval*)
+   Rewrites a full property value by name. */
+static void write_rule(char *rule, zval *value TSRMLS_DC) {
+	zend_update_static_property(fastium_inflector_ce, rule, strlen(rule), value TSRMLS_CC);
+}
+
+static void init_transliteration_rules(TSRMLS_D) {
+	zval *value;
+
+	MAKE_STD_ZVAL(value);
+	array_init(value);
+
+	add_assoc_string(value, "/à|á|å|â/",   "a", 1);
+	add_assoc_string(value, "/è|é|ê|ẽ|ë/", "e", 1);
+	add_assoc_string(value, "/ì|í|î/",     "i", 1);
+	add_assoc_string(value, "/ò|ó|ô|ø/",   "o", 1);
+	add_assoc_string(value, "/ù|ú|ů|û/",   "u", 1);
+	add_assoc_string(value, "/ç/",         "c", 1);
+	add_assoc_string(value, "/ñ/",         "n", 1);
+	add_assoc_string(value, "/ä|æ/",       "ae", 1);
+	add_assoc_string(value, "/ö/",         "oe", 1);
+	add_assoc_string(value, "/ü/",         "ue", 1);
+	add_assoc_string(value, "/Ä/",         "Ae", 1);
+	add_assoc_string(value, "/Ü/",         "Ue", 1);
+	add_assoc_string(value, "/Ö/",         "Oe", 1);
+	add_assoc_string(value, "/ß/",         "ss", 1);
+
+	write_rule("_transliteration", value TSRMLS_CC);
+}
+
+/* {{{ _regex_enclose(char*, int)
    Enclose a string for preg matching. */
 static char * _regex_enclose(char *str, int str_len)
 {
@@ -219,7 +249,7 @@ zend_module_entry fastium_module_entry = {
 	NULL,                     /* Functions  */
 	PHP_MINIT(fastium),       /* MINIT */
 	NULL,                     /* MSHUTDOWN */
-	NULL,                     /* RINIT */
+	PHP_RINIT(fastium),       /* RINIT */
 	NULL,                     /* RSHUTDOWN */
 	PHP_MINFO(fastium),       /* MINFO */
 	PHP_FASTIUM_EXTVER,
@@ -242,7 +272,7 @@ PHP_MINIT_FUNCTION(fastium)
 		return FAILURE;
 	#endif
 
-
+	/* Declare static class properties */
 	int flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
 
 	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
@@ -250,6 +280,7 @@ PHP_MINIT_FUNCTION(fastium)
 	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_singular"), flags TSRMLS_CC);
 	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_plural"), flags TSRMLS_CC);
 
+	/* Initialize method result caches  */
 	ALLOC_HASHTABLE(FASTIUM_G(underscore_cache));
 	ALLOC_HASHTABLE(FASTIUM_G(humanize_cache));
 	ALLOC_HASHTABLE(FASTIUM_G(camelize_cache));
@@ -260,6 +291,14 @@ PHP_MINIT_FUNCTION(fastium)
 	zend_hash_init(FASTIUM_G(camelize_cache), 0, NULL, NULL, 1);
 	zend_hash_init(FASTIUM_G(camelize_under_cache), 0, NULL, NULL, 1);
 
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_RINIT_FUNCTION */
+PHP_RINIT_FUNCTION(fastium)
+{
+	init_transliteration_rules(TSRMLS_C);
 	return SUCCESS;
 }
 /* }}} */

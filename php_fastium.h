@@ -49,6 +49,7 @@ PHP_FUNCTION(humanize);
 PHP_FUNCTION(camelize);
 PHP_FUNCTION(enclose);
 PHP_MINIT_FUNCTION(fastium);
+PHP_RINIT_FUNCTION(fastium);
 PHP_MSHUTDOWN_FUNCTION(fastium);
 PHP_MINFO_FUNCTION(fastium);
 /* }}} */
