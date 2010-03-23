@@ -33,6 +33,24 @@ static char * _regex_enclose(char *str, int str_len)
 }
 /* }}} */
 
+/* {{{ _ucwords(char*, int)
+   Uppercase the first character of every word in a string */
+static char * _ucwords(char *str, int str_len)
+{
+	register char *r, *r_end;
+
+	r = str;
+	*r = toupper((unsigned char) *r);
+
+	for (r_end = r + str_len - 1; r < r_end; ) {
+		if (isspace((int) *(unsigned char *)r++)) {
+			*r = toupper((unsigned char) *r);
+		}
+	}
+	return str;
+}
+/* }}} */
+
 /* PHP METHODS */
 
 /* {{{ proto string lithium\util\Inflector::underscore(string)
@@ -64,7 +82,7 @@ static PHP_METHOD(Inflector, underscore)
 
 	/* Perform regular expression replacement */
 	result = php_pcre_replace(
-		"/(?<=\\w)([A-Z])/",strlen("/(?<=\\w)([A-Z])/"),
+		"/(?<=\\w)([A-Z])/", strlen("/(?<=\\w)([A-Z])/"),
 		word, word_len,
 		replace_val, 0, &result_len, -1, NULL TSRMLS_CC);
 
@@ -87,7 +105,6 @@ static PHP_METHOD(Inflector, humanize)
 {
 	char *word = NULL, *separator = "_", *result = NULL;
 	int word_len, separator_len = 1, result_len;
-	zval *params[1], *fname;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &word, &word_len, &separator, &separator_len) == FAILURE) {
 		RETURN_FALSE;
@@ -106,27 +123,13 @@ static PHP_METHOD(Inflector, humanize)
 	}
 
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
+	RETVAL_STRINGL(_ucwords(result, result_len), result_len, 1);
 
-	MAKE_STD_ZVAL(fname);
-	ZVAL_STRING(fname, "ucwords", 1);
-	MAKE_STD_ZVAL(params[0]);
-	ZVAL_STRINGL(params[0], result, result_len, 1);
-
-	if (call_user_function(EG(function_table), NULL,
-				fname, return_value, 1, params TSRMLS_CC) == FAILURE) {
-
-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
-				"Unable to call ucwords(). This shouldn't happen.");
-		RETVAL_FALSE;
-		goto cleanup;
-	}
 	zend_hash_add(INFLECTOR_G(humanize_cache), word, word_len,
 		Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), NULL);
 
 cleanup:
 	efree(result);
-	zval_ptr_dtor(&fname);
-	zval_ptr_dtor(&params[0]);
 	return;
 }
 /* }}} */
@@ -134,7 +137,7 @@ cleanup:
 /* {{{ proto string lithium\util\Inflector::camelize(string, string) */
 static PHP_METHOD(Inflector, camelize)
 {
-	register char *r, *r_end;
+	register char *r;
 	char *word, *result, *result2;
 	int word_len, result_len, result2_len;
 	zend_bool cased = 1;
@@ -162,17 +165,7 @@ static PHP_METHOD(Inflector, camelize)
 		}
 	}
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
-
-	r = result;
-	*r = toupper((unsigned char) *r);
-
-	for (r_end = r + result_len - 1; r < r_end; ) {
-		if (isspace((int) *(unsigned char *)r++)) {
-			*r = toupper((unsigned char) *r);
-		}
-	}
-
-	result2 = php_str_to_str(result, result_len, " ", 1, "", 0, &result2_len);
+	result2 = php_str_to_str(_ucwords(result, result_len), result_len, " ", 1, "", 0, &result2_len);
 
 	if (cased != 1) {
 		r = result2;
