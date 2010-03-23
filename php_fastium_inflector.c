@@ -43,6 +43,7 @@ static void init_transliteration_rules(TSRMLS_D) {
 	add_assoc_string(value, "/ß/",         "ss", 1);
 
 	write_rule("_transliteration", value TSRMLS_CC);
+	zval_ptr_dtor(&value);
 }
 
 /* {{{ _regex_enclose(char*, int)
