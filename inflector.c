@@ -247,8 +247,7 @@ PHP_MINIT_FUNCTION(inflector)
 	#endif
 
 
-	int flags;
-	flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
+	int flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
 
 	zend_declare_property_null(inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
 	zend_declare_property_null(inflector_ce , ZEND_STRL("_uninflected"), flags TSRMLS_CC);
