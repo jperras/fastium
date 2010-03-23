@@ -191,8 +191,8 @@ cleanup:
 }
 /* }}} */
 
-/* {{{ proto lithium\util\Inflector::enclose(string) */
-static PHP_METHOD(Inflector, enclose)
+/* {{{ proto lithium\util\Inflector::_enclose(string) */
+static PHP_METHOD(Inflector, _enclose)
 {
 	char *word = NULL;
 	int word_len;
@@ -211,7 +211,7 @@ static function_entry inflector_class_methods[] = {
 	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Inflector, camelize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(Inflector, enclose,    NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(Inflector, _enclose,   NULL, ZEND_ACC_PROTECTED | ZEND_ACC_STATIC)
 	{ NULL, NULL, NULL }
 };
 /* }}} */
