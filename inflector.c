@@ -238,6 +238,15 @@ PHP_MINIT_FUNCTION(inflector)
 	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", inflector_class_methods);
 	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
+	#ifdef ZTS
+	if( ts_allocate_id( &inflector_globals_id,
+					sizeof(zend_inflector_globals),
+					(ts_allocate_ctor) NULL,
+					(ts_allocate_dtor) NULL ) == 0 )
+		return FAILURE;
+	#endif
+
+
 	int flags;
 	flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
 
