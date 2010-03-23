@@ -33,7 +33,7 @@ static char * _regex_enclose(char *str, int str_len)
 }
 /* }}} */
 
-/* {{{ _ucwords(char*, int)
+/* {{{ char * _ucwords(char*, int)
    Uppercase the first character of every word in a string */
 static char * _ucwords(char *str, int str_len)
 {
@@ -98,6 +98,7 @@ static PHP_METHOD(Inflector, underscore)
 }
 /* }}} */
 
+
 /* {{{ proto string lithium\util\Inflector::humanize(string)
        Takes an under_scored version of a word and turns it into an human-readable form
 	   by replacing underscores with a space, and by upper casing the initial character. */
@@ -134,7 +135,8 @@ cleanup:
 }
 /* }}} */
 
-/* {{{ proto string lithium\util\Inflector::camelize(string, string) */
+/* {{{ proto string lithium\util\Inflector::camelize(string, string)
+       Takes a under_scored word and turns it into a CamelCased or camelBack word */
 static PHP_METHOD(Inflector, camelize)
 {
 	register char *r;
@@ -209,15 +211,16 @@ static function_entry inflector_class_methods[] = {
 };
 /* }}} */
 
-/* {{{ inflector_module_entry  */
+/* {{{ inflector_module_entry
+       Declare all module handlers */
 zend_module_entry inflector_module_entry = {
 	STANDARD_MODULE_HEADER,
 	PHP_INFLECTOR_EXTNAME,
-	NULL,     /* Functions  */
+	NULL,                     /* Functions  */
 	PHP_MINIT(inflector),     /* MINIT */
-	NULL,     /* MSHUTDOWN */
-	NULL,     /* RINIT */
-	NULL,     /* RSHUTDOWN */
+	NULL,                     /* MSHUTDOWN */
+	NULL,                     /* RINIT */
+	NULL,                     /* RSHUTDOWN */
 	PHP_MINFO(inflector),     /* MINFO */
 	PHP_INFLECTOR_EXTVER,
 	STANDARD_MODULE_PROPERTIES
