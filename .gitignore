@@ -1,6 +1,6 @@
 /*
 !/.gitignore
 !/config.m4
-!/php_inflector.h
-!/inflector.c
+!/php_fastium.h
+!/php_fastium_inflector.c
 !/tests/*.phpt
