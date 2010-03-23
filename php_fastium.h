@@ -1,5 +1,5 @@
-#ifndef PHP_INFLECTOR_H
-#define PHP_INFLECTOR_H
+#ifndef PHP_FASTIUM_H
+#define PHP_FASTIUM_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -8,14 +8,14 @@
 #include <php.h>
 
 /* {{{ Defines */
-#define PHP_INFLECTOR_EXTNAME "fastium"
-#define PHP_INFLECTOR_EXTVER  "0.1"
+#define PHP_FASTIUM_EXTNAME "fastium"
+#define PHP_FASTIUM_EXTVER  "0.1"
 #define FASTIUM_NS "lithium\\"
 #define FASTIUM_UTIL_NS FASTIUM_NS "util"
 /* }}} */
 
-extern zend_module_entry inflector_module_entry;
-#define phpext_inflector_ptr &inflector_module_entry;
+extern zend_module_entry fastium_module_entry;
+#define phpext_fastium_ptr &fastium_module_entry;
 
 /* {{{ ZTS */
 #ifndef ZTS
@@ -23,17 +23,17 @@ extern zend_module_entry inflector_module_entry;
 #endif
 /* }}} */
 
-ZEND_BEGIN_MODULE_GLOBALS(inflector)
+ZEND_BEGIN_MODULE_GLOBALS(fastium)
 HashTable *underscore_cache;
 HashTable *humanize_cache;
 HashTable *camelize_cache;
 HashTable *camelize_under_cache;
-ZEND_END_MODULE_GLOBALS(inflector)
+ZEND_END_MODULE_GLOBALS(fastium)
 
 #ifdef ZTS
-#define INFLECTOR_G(v) TSRMG(inflector_globals_id, zend_inflector_globals *, v)
+#define FASTIUM_G(v) TSRMG(fastium_globals_id, zend_fastium_globals *, v)
 #else
-#define INFLECTOR_G(v) (inflector_globals.v)
+#define FASTIUM_G(v) (fastium_globals.v)
 #endif
 
 
@@ -41,18 +41,19 @@ ZEND_END_MODULE_GLOBALS(inflector)
 
 /* Static helper functions */
 static char * _regex_enclose(char*, int);
+static char * _ucwords(char*, int);
 
 /* PHP METHODS */
 PHP_FUNCTION(underscore);
 PHP_FUNCTION(humanize);
 PHP_FUNCTION(camelize);
 PHP_FUNCTION(enclose);
-PHP_MINIT_FUNCTION(inflector);
-PHP_MSHUTDOWN_FUNCTION(inflector);
-PHP_MINFO_FUNCTION(inflector);
+PHP_MINIT_FUNCTION(fastium);
+PHP_MSHUTDOWN_FUNCTION(fastium);
+PHP_MINFO_FUNCTION(fastium);
 /* }}} */
 
-#endif /* PHP_INFLECTOR_H */
+#endif /* PHP_FASTIUM_H */
 
 /*
  * Local variables:

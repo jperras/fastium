@@ -1,21 +1,21 @@
 /* -*- Mode: C; tab-width: 4 -*- */
 
-#include "php_inflector.h"
+#include "php_fastium.h"
 #include "ext/standard/php_string.h"
 #include "ext/pcre/php_pcre.h"
 #include "Zend/zend_hash.h"
 
-ZEND_DECLARE_MODULE_GLOBALS(inflector);
+ZEND_DECLARE_MODULE_GLOBALS(fastium);
 
 /* Declarations */
-static zend_class_entry *inflector_ce = NULL;
+static zend_class_entry *fastium_inflector_ce = NULL;
 
 /*
  * Static helper functions.
  * @todo Move to separate .h/.c files.
  */
 
-/* {{{ _regex_enclose(char*, int)
+/* {{{ static char * _regex_enclose(char*, int)
    Enclose a string for preg matching. */
 static char * _regex_enclose(char *str, int str_len)
 {
@@ -33,7 +33,7 @@ static char * _regex_enclose(char *str, int str_len)
 }
 /* }}} */
 
-/* {{{ char * _ucwords(char*, int)
+/* {{{ static char * _ucwords(char*, int)
    Uppercase the first character of every word in a string */
 static char * _ucwords(char *str, int str_len)
 {
@@ -69,9 +69,9 @@ static PHP_METHOD(Inflector, underscore)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (zend_hash_exists(INFLECTOR_G(underscore_cache), word, word_len)) {
+	if (zend_hash_exists(FASTIUM_G(underscore_cache), word, word_len)) {
 		zval **cache;
-		if (zend_hash_find(INFLECTOR_G(underscore_cache), word, word_len, (void **) &cache) == SUCCESS) {
+		if (zend_hash_find(FASTIUM_G(underscore_cache), word, word_len, (void **) &cache) == SUCCESS) {
 			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
 			RETURN_STRING(cache, 1);
 		}
@@ -90,7 +90,7 @@ static PHP_METHOD(Inflector, underscore)
 	php_strtolower(result, result_len);
 
 	RETVAL_STRINGL(result, result_len, 1);
-	zend_hash_add(INFLECTOR_G(underscore_cache), word, word_len, result, result_len, NULL);
+	zend_hash_add(FASTIUM_G(underscore_cache), word, word_len, result, result_len, NULL);
 
 	zval_ptr_dtor(&replace_val);
 	efree(result);
@@ -115,9 +115,9 @@ static PHP_METHOD(Inflector, humanize)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (zend_hash_exists(INFLECTOR_G(humanize_cache), word, word_len)) {
+	if (zend_hash_exists(FASTIUM_G(humanize_cache), word, word_len)) {
 		zval **cache;
-		if (zend_hash_find(INFLECTOR_G(humanize_cache), word, word_len, (void **) &cache) == SUCCESS) {
+		if (zend_hash_find(FASTIUM_G(humanize_cache), word, word_len, (void **) &cache) == SUCCESS) {
 			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 1);
 			RETURN_STRING(cache, 1);
 		}
@@ -126,7 +126,7 @@ static PHP_METHOD(Inflector, humanize)
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
 	RETVAL_STRINGL(_ucwords(result, result_len), result_len, 1);
 
-	zend_hash_add(INFLECTOR_G(humanize_cache), word, word_len,
+	zend_hash_add(FASTIUM_G(humanize_cache), word, word_len,
 		Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), NULL);
 
 cleanup:
@@ -152,16 +152,16 @@ static PHP_METHOD(Inflector, camelize)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (cased == 1 && zend_hash_exists(INFLECTOR_G(camelize_cache), word, word_len)) {
+	if (cased == 1 && zend_hash_exists(FASTIUM_G(camelize_cache), word, word_len)) {
 		zval **cache;
-		if (zend_hash_find(INFLECTOR_G(camelize_cache), word, word_len, (void **) &cache) == SUCCESS) {
+		if (zend_hash_find(FASTIUM_G(camelize_cache), word, word_len, (void **) &cache) == SUCCESS) {
 			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
 			RETURN_STRING(cache, 1);
 		}
 	}
-	if (cased == 0 && zend_hash_exists(INFLECTOR_G(camelize_under_cache), word, word_len)) {
+	if (cased == 0 && zend_hash_exists(FASTIUM_G(camelize_under_cache), word, word_len)) {
 		zval **cache;
-		if (zend_hash_find(INFLECTOR_G(camelize_under_cache), word, word_len, (void **) &cache) == SUCCESS) {
+		if (zend_hash_find(FASTIUM_G(camelize_under_cache), word, word_len, (void **) &cache) == SUCCESS) {
 			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
 			RETURN_STRING(cache, 1);
 		}
@@ -172,9 +172,9 @@ static PHP_METHOD(Inflector, camelize)
 	if (cased != 1) {
 		r = result2;
 		*r = tolower((unsigned char) *r);
-		zend_hash_add(INFLECTOR_G(camelize_under_cache), word, word_len, result2, result2_len, NULL);
+		zend_hash_add(FASTIUM_G(camelize_under_cache), word, word_len, result2, result2_len, NULL);
 	} else {
-		zend_hash_add(INFLECTOR_G(camelize_cache), word, word_len, result2, result2_len, NULL);
+		zend_hash_add(FASTIUM_G(camelize_cache), word, word_len, result2, result2_len, NULL);
 	}
 
 	RETVAL_STRINGL(result2, result2_len, 1);
@@ -201,8 +201,8 @@ static PHP_METHOD(Inflector, _enclose)
 
 /* EXTENSION DIRECTIVES */
 
-/* {{{ inflector_functions[] */
-static function_entry inflector_class_methods[] = {
+/* {{{ fastium_class_methods struct */
+static function_entry fastium_class_methods[] = {
 	PHP_ME(Inflector, underscore, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Inflector, humanize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Inflector, camelize,   NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -211,32 +211,32 @@ static function_entry inflector_class_methods[] = {
 };
 /* }}} */
 
-/* {{{ inflector_module_entry
+/* {{{ fastium_module_entry
        Declare all module handlers */
-zend_module_entry inflector_module_entry = {
+zend_module_entry fastium_module_entry = {
 	STANDARD_MODULE_HEADER,
-	PHP_INFLECTOR_EXTNAME,
+	PHP_FASTIUM_EXTNAME,
 	NULL,                     /* Functions  */
-	PHP_MINIT(inflector),     /* MINIT */
+	PHP_MINIT(fastium),       /* MINIT */
 	NULL,                     /* MSHUTDOWN */
 	NULL,                     /* RINIT */
 	NULL,                     /* RSHUTDOWN */
-	PHP_MINFO(inflector),     /* MINFO */
-	PHP_INFLECTOR_EXTVER,
+	PHP_MINFO(fastium),       /* MINFO */
+	PHP_FASTIUM_EXTVER,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(inflector)
+PHP_MINIT_FUNCTION(fastium)
 {
 	zend_class_entry ce;
-	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", inflector_class_methods);
-	inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", fastium_class_methods);
+	fastium_inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	#ifdef ZTS
-	if( ts_allocate_id( &inflector_globals_id,
-					sizeof(zend_inflector_globals),
+	if(ts_allocate_id( &fastium_globals_id,
+					sizeof(zend_fastium_globals),
 					(ts_allocate_ctor) NULL,
 					(ts_allocate_dtor) NULL ) == 0 )
 		return FAILURE;
@@ -245,59 +245,59 @@ PHP_MINIT_FUNCTION(inflector)
 
 	int flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
 
-	zend_declare_property_null(inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
-	zend_declare_property_null(inflector_ce , ZEND_STRL("_uninflected"), flags TSRMLS_CC);
-	zend_declare_property_null(inflector_ce , ZEND_STRL("_singular"), flags TSRMLS_CC);
-	zend_declare_property_null(inflector_ce , ZEND_STRL("_plural"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_uninflected"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_singular"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_plural"), flags TSRMLS_CC);
 
-	ALLOC_HASHTABLE(INFLECTOR_G(underscore_cache));
-	ALLOC_HASHTABLE(INFLECTOR_G(humanize_cache));
-	ALLOC_HASHTABLE(INFLECTOR_G(camelize_cache));
-	ALLOC_HASHTABLE(INFLECTOR_G(camelize_under_cache));
+	ALLOC_HASHTABLE(FASTIUM_G(underscore_cache));
+	ALLOC_HASHTABLE(FASTIUM_G(humanize_cache));
+	ALLOC_HASHTABLE(FASTIUM_G(camelize_cache));
+	ALLOC_HASHTABLE(FASTIUM_G(camelize_under_cache));
 
-	zend_hash_init(INFLECTOR_G(underscore_cache), 0, NULL, NULL, 1);
-	zend_hash_init(INFLECTOR_G(humanize_cache), 0, NULL, NULL, 1);
-	zend_hash_init(INFLECTOR_G(camelize_cache), 0, NULL, NULL, 1);
-	zend_hash_init(INFLECTOR_G(camelize_under_cache), 0, NULL, NULL, 1);
+	zend_hash_init(FASTIUM_G(underscore_cache), 0, NULL, NULL, 1);
+	zend_hash_init(FASTIUM_G(humanize_cache), 0, NULL, NULL, 1);
+	zend_hash_init(FASTIUM_G(camelize_cache), 0, NULL, NULL, 1);
+	zend_hash_init(FASTIUM_G(camelize_under_cache), 0, NULL, NULL, 1);
 
 	return SUCCESS;
 }
 /* }}} */
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
-PHP_MSHUTDOWN_FUNCTION(inflector)
+PHP_MSHUTDOWN_FUNCTION(fastium)
 {
-	zend_hash_destroy(INFLECTOR_G(underscore_cache));
-	zend_hash_destroy(INFLECTOR_G(humanize_cache));
-	zend_hash_destroy(INFLECTOR_G(camelize_cache));
-	zend_hash_destroy(INFLECTOR_G(camelize_under_cache));
+	zend_hash_destroy(FASTIUM_G(underscore_cache));
+	zend_hash_destroy(FASTIUM_G(humanize_cache));
+	zend_hash_destroy(FASTIUM_G(camelize_cache));
+	zend_hash_destroy(FASTIUM_G(camelize_under_cache));
 
-	FREE_HASHTABLE(INFLECTOR_G(underscore_cache));
-	FREE_HASHTABLE(INFLECTOR_G(humanize_cache));
-	FREE_HASHTABLE(INFLECTOR_G(camelize_cache));
-	FREE_HASHTABLE(INFLECTOR_G(camelize_under_cache));
+	FREE_HASHTABLE(FASTIUM_G(underscore_cache));
+	FREE_HASHTABLE(FASTIUM_G(humanize_cache));
+	FREE_HASHTABLE(FASTIUM_G(camelize_cache));
+	FREE_HASHTABLE(FASTIUM_G(camelize_under_cache));
 
-	INFLECTOR_G(underscore_cache) = NULL;
-	INFLECTOR_G(humanize_cache) = NULL;
-	INFLECTOR_G(camelize_cache) = NULL;
-	INFLECTOR_G(camelize_under_cache) = NULL;
+	FASTIUM_G(underscore_cache) = NULL;
+	FASTIUM_G(humanize_cache) = NULL;
+	FASTIUM_G(camelize_cache) = NULL;
+	FASTIUM_G(camelize_under_cache) = NULL;
 
 	return SUCCESS;
 }
 /* }}} */
 
 /* {{{ PHP_MINFO_FUNCTION */
-PHP_MINFO_FUNCTION(inflector)
+PHP_MINFO_FUNCTION(fastium)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, PHP_INFLECTOR_EXTNAME, "Zoooom!");
+	php_info_print_table_header(2, PHP_FASTIUM_EXTNAME, "Zoooom!");
 	php_info_print_table_row(2, "Speed", "enabled");
-    php_info_print_table_row(2, "Version", PHP_INFLECTOR_EXTVER);
+    php_info_print_table_row(2, "Version", PHP_FASTIUM_EXTVER);
 	php_info_print_table_end();
 }
 
-#ifdef COMPILE_DL_INFLECTOR
-ZEND_GET_MODULE(inflector)
+#ifdef COMPILE_DL_FASTIUM
+ZEND_GET_MODULE(fastium)
 #endif
 /* }}} */
 
