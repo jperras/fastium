@@ -217,6 +217,35 @@ cleanup:
 }
 /* }}} */
 
+/* {{{ proto string lithium\util\Inflector::slug(string)
+       Takes an under_scored version of a word and turns it into an human-readable form
+	   by replacing underscores with a space, and by upper casing the initial character. */
+static PHP_METHOD(Inflector, slug)
+{
+	char *word = NULL, *replace = "-", *result = NULL;
+	int word_len, replace_len = 1, result_len;
+
+	zval *defaults;
+	zval **trans = zend_std_get_static_property(fastium_inflector_ce,
+		"_transliteration", strlen("_transliteration"), 0 TSRMLS_CC);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &word, &word_len, &replace, &replace_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (!word_len) {
+		RETURN_EMPTY_STRING();
+	}
+
+	MAKE_STD_ZVAL(defaults);
+	array_init(defaults);
+	add_assoc_string(defaults, "/[^\\w\\s]/", " ", 1);
+	add_assoc_string(defaults, "/\\\\s+/", replace, 1);
+
+	// @todo Finish me
+}
+/* }}} */
+
 /* {{{ proto lithium\util\Inflector::_enclose(string) */
 static PHP_METHOD(Inflector, _enclose)
 {
@@ -276,10 +305,10 @@ PHP_MINIT_FUNCTION(fastium)
 	/* Declare static class properties */
 	int flags = (ZEND_ACC_STATIC | ZEND_ACC_PROTECTED);
 
-	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_transliteration"), flags TSRMLS_CC);
-	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_uninflected"), flags TSRMLS_CC);
-	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_singular"), flags TSRMLS_CC);
-	zend_declare_property_null(fastium_inflector_ce , ZEND_STRL("_plural"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce, ZEND_STRL("_transliteration"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce, ZEND_STRL("_uninflected"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce, ZEND_STRL("_singular"), flags TSRMLS_CC);
+	zend_declare_property_null(fastium_inflector_ce, ZEND_STRL("_plural"), flags TSRMLS_CC);
 
 	/* Initialize method result caches  */
 	ALLOC_HASHTABLE(FASTIUM_G(underscore_cache));
