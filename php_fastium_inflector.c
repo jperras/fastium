@@ -90,7 +90,7 @@ static char * _ucwords(char *str, int str_len)
        Takes a CamelCased version of a word and turns it into an under_scored one. */
 static PHP_METHOD(Inflector, underscore)
 {
-	char *word = NULL, *result = NULL;
+	char *cache = NULL, *word = NULL, *result = NULL;
 	int word_len = 0, result_len = 0;
 	zval *replace_val;
 
@@ -103,9 +103,9 @@ static PHP_METHOD(Inflector, underscore)
 	}
 
 	if (zend_hash_exists(FASTIUM_G(underscore_cache), word, word_len + 1)) {
-		zval **cache;
 		if (zend_hash_find(FASTIUM_G(underscore_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETURN_STRING(cache, 1);
+			RETVAL_STRING((char *) cache, 1);
+			goto cleanup;
 		}
 	}
 
@@ -125,6 +125,8 @@ static PHP_METHOD(Inflector, underscore)
 	zend_hash_add(FASTIUM_G(underscore_cache), word, word_len + 1, result, result_len, NULL);
 
 	zval_ptr_dtor(&replace_val);
+
+cleanup:
 	efree(result);
 	return;
 }
@@ -136,6 +138,7 @@ static PHP_METHOD(Inflector, underscore)
 	   by replacing underscores with a space, and by upper casing the initial character. */
 static PHP_METHOD(Inflector, humanize)
 {
+	char *cache = NULL;
 	char *word = NULL, *separator = "_", *result = NULL;
 	int word_len, separator_len = 1, result_len;
 
@@ -148,9 +151,9 @@ static PHP_METHOD(Inflector, humanize)
 	}
 
 	if (zend_hash_exists(FASTIUM_G(humanize_cache), word, word_len + 1)) {
-		zval **cache;
 		if (zend_hash_find(FASTIUM_G(humanize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETURN_STRING((void **) cache, 1);
+			RETVAL_STRING((char *) cache, 1);
+			goto cleanup;
 		}
 	}
 
@@ -171,7 +174,7 @@ cleanup:
 static PHP_METHOD(Inflector, camelize)
 {
 	register char *r;
-	char *word, *result, *result2;
+	char *cache = NULL, *word, *result = NULL, *result2 = NULL;
 	int word_len, result_len, result2_len;
 	zend_bool cased = 1;
 
@@ -184,17 +187,15 @@ static PHP_METHOD(Inflector, camelize)
 	}
 
 	if (cased == 1 && zend_hash_exists(FASTIUM_G(camelize_cache), word, word_len + 1)) {
-		zval **cache;
 		if (zend_hash_find(FASTIUM_G(camelize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			php_printf(Z_TYPE_PP(cache));
-			exit(0);
-			RETURN_STRING(Z_STRVAL_PP(cache), 1);
+			RETVAL_STRING((char *) cache, 1);
+			goto cleanup;
 		}
 	}
 	if (cased == 0 && zend_hash_exists(FASTIUM_G(camelize_under_cache), word, word_len + 1)) {
-		zval **cache;
 		if (zend_hash_find(FASTIUM_G(camelize_under_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETURN_STRING(Z_STRVAL_PP(cache), 1);
+			RETVAL_STRING((char *) cache, 1);
+			goto cleanup;
 		}
 	}
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
