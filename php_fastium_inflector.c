@@ -27,6 +27,8 @@ static void init_transliteration_rules(TSRMLS_D) {
 	MAKE_STD_ZVAL(value);
 	array_init(value);
 
+	// zend_hash_add(FASTIUM_G(camelize_under_cache), word, word_len, result2, result2_len, NULL);
+
 	add_assoc_string(value, "/à|á|å|â/",   "a", 1);
 	add_assoc_string(value, "/è|é|ê|ẽ|ë/", "e", 1);
 	add_assoc_string(value, "/ì|í|î/",     "i", 1);
@@ -100,10 +102,9 @@ static PHP_METHOD(Inflector, underscore)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (zend_hash_exists(FASTIUM_G(underscore_cache), word, word_len)) {
+	if (zend_hash_exists(FASTIUM_G(underscore_cache), word, word_len + 1)) {
 		zval **cache;
-		if (zend_hash_find(FASTIUM_G(underscore_cache), word, word_len, (void **) &cache) == SUCCESS) {
-			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
+		if (zend_hash_find(FASTIUM_G(underscore_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
 			RETURN_STRING(cache, 1);
 		}
 	}
@@ -121,7 +122,7 @@ static PHP_METHOD(Inflector, underscore)
 	php_strtolower(result, result_len);
 
 	RETVAL_STRINGL(result, result_len, 1);
-	zend_hash_add(FASTIUM_G(underscore_cache), word, word_len, result, result_len, NULL);
+	zend_hash_add(FASTIUM_G(underscore_cache), word, word_len + 1, result, result_len, NULL);
 
 	zval_ptr_dtor(&replace_val);
 	efree(result);
@@ -146,18 +147,17 @@ static PHP_METHOD(Inflector, humanize)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (zend_hash_exists(FASTIUM_G(humanize_cache), word, word_len)) {
+	if (zend_hash_exists(FASTIUM_G(humanize_cache), word, word_len + 1)) {
 		zval **cache;
-		if (zend_hash_find(FASTIUM_G(humanize_cache), word, word_len, (void **) &cache) == SUCCESS) {
-			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 1);
-			RETURN_STRING(cache, 1);
+		if (zend_hash_find(FASTIUM_G(humanize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
+			RETURN_STRING((void **) cache, 1);
 		}
 	}
 
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
 	RETVAL_STRINGL(_ucwords(result, result_len), result_len, 1);
 
-	zend_hash_add(FASTIUM_G(humanize_cache), word, word_len,
+	zend_hash_add(FASTIUM_G(humanize_cache), word, word_len + 1,
 		Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), NULL);
 
 cleanup:
@@ -183,18 +183,18 @@ static PHP_METHOD(Inflector, camelize)
 		RETURN_EMPTY_STRING();
 	}
 
-	if (cased == 1 && zend_hash_exists(FASTIUM_G(camelize_cache), word, word_len)) {
+	if (cased == 1 && zend_hash_exists(FASTIUM_G(camelize_cache), word, word_len + 1)) {
 		zval **cache;
-		if (zend_hash_find(FASTIUM_G(camelize_cache), word, word_len, (void **) &cache) == SUCCESS) {
-			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
-			RETURN_STRING(cache, 1);
+		if (zend_hash_find(FASTIUM_G(camelize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
+			php_printf(Z_TYPE_PP(cache));
+			exit(0);
+			RETURN_STRING(Z_STRVAL_PP(cache), 1);
 		}
 	}
-	if (cased == 0 && zend_hash_exists(FASTIUM_G(camelize_under_cache), word, word_len)) {
+	if (cased == 0 && zend_hash_exists(FASTIUM_G(camelize_under_cache), word, word_len + 1)) {
 		zval **cache;
-		if (zend_hash_find(FASTIUM_G(camelize_under_cache), word, word_len, (void **) &cache) == SUCCESS) {
-			// RETURN_STRINGL(Z_STRVAL_PP(cache), Z_STRLEN_PP(cache), 0);
-			RETURN_STRING(cache, 1);
+		if (zend_hash_find(FASTIUM_G(camelize_under_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
+			RETURN_STRING(Z_STRVAL_PP(cache), 1);
 		}
 	}
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
@@ -203,9 +203,9 @@ static PHP_METHOD(Inflector, camelize)
 	if (cased != 1) {
 		r = result2;
 		*r = tolower((unsigned char) *r);
-		zend_hash_add(FASTIUM_G(camelize_under_cache), word, word_len, result2, result2_len, NULL);
+		zend_hash_add(FASTIUM_G(camelize_under_cache), word, word_len + 1, result2, result2_len, NULL);
 	} else {
-		zend_hash_add(FASTIUM_G(camelize_cache), word, word_len, result2, result2_len, NULL);
+		zend_hash_add(FASTIUM_G(camelize_cache), word, word_len + 1, result2, result2_len, NULL);
 	}
 
 	RETVAL_STRINGL(result2, result2_len, 1);
