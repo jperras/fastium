@@ -104,8 +104,7 @@ static PHP_METHOD(Inflector, underscore)
 
 	if (zend_hash_exists(FASTIUM_G(underscore_cache), word, word_len + 1)) {
 		if (zend_hash_find(FASTIUM_G(underscore_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETVAL_STRING((char *) cache, 1);
-			goto cleanup;
+			RETURN_STRING((char *) cache, 1);
 		}
 	}
 
@@ -124,11 +123,8 @@ static PHP_METHOD(Inflector, underscore)
 	RETVAL_STRINGL(result, result_len, 1);
 	zend_hash_add(FASTIUM_G(underscore_cache), word, word_len + 1, result, result_len, NULL);
 
-	zval_ptr_dtor(&replace_val);
-
-cleanup:
 	efree(result);
-	return;
+	zval_ptr_dtor(&replace_val);
 }
 /* }}} */
 
@@ -152,20 +148,16 @@ static PHP_METHOD(Inflector, humanize)
 
 	if (zend_hash_exists(FASTIUM_G(humanize_cache), word, word_len + 1)) {
 		if (zend_hash_find(FASTIUM_G(humanize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETVAL_STRING((char *) cache, 1);
-			goto cleanup;
+			RETURN_STRING((char *) cache, 1);
 		}
 	}
 
 	result = php_str_to_str(word, word_len, separator, separator_len, " ", 1, &result_len);
 	RETVAL_STRINGL(_ucwords(result, result_len), result_len, 1);
+	efree(result);
 
 	zend_hash_add(FASTIUM_G(humanize_cache), word, word_len + 1,
 		Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), NULL);
-
-cleanup:
-	efree(result);
-	return;
 }
 /* }}} */
 
@@ -188,18 +180,17 @@ static PHP_METHOD(Inflector, camelize)
 
 	if (cased == 1 && zend_hash_exists(FASTIUM_G(camelize_cache), word, word_len + 1)) {
 		if (zend_hash_find(FASTIUM_G(camelize_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETVAL_STRING((char *) cache, 1);
-			goto cleanup;
+			RETURN_STRING((char *) cache, 1);
 		}
 	}
 	if (cased == 0 && zend_hash_exists(FASTIUM_G(camelize_under_cache), word, word_len + 1)) {
 		if (zend_hash_find(FASTIUM_G(camelize_under_cache), word, word_len + 1, (void **) &cache) == SUCCESS) {
-			RETVAL_STRING((char *) cache, 1);
-			goto cleanup;
+			RETURN_STRING((char *) cache, 1);
 		}
 	}
 	result = php_str_to_str(word, word_len, "_", 1, " ", 1, &result_len);
 	result2 = php_str_to_str(_ucwords(result, result_len), result_len, " ", 1, "", 0, &result2_len);
+	efree(result);
 
 	if (cased != 1) {
 		r = result2;
@@ -210,11 +201,7 @@ static PHP_METHOD(Inflector, camelize)
 	}
 
 	RETVAL_STRINGL(result2, result2_len, 1);
-
-cleanup:
-	efree(result);
 	efree(result2);
-	return;
 }
 /* }}} */
 
