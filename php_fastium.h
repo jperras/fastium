@@ -10,8 +10,7 @@
 /* {{{ Defines */
 #define PHP_FASTIUM_EXTNAME "fastium"
 #define PHP_FASTIUM_EXTVER  "0.1"
-#define FASTIUM_NS "lithium\\"
-#define FASTIUM_UTIL_NS FASTIUM_NS "util"
+#define FASTIUM_NS "fastium"
 /* }}} */
 
 extern zend_module_entry fastium_module_entry;

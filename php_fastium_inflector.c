@@ -17,11 +17,15 @@ static zend_class_entry *fastium_inflector_ce = NULL;
 
 /* {{{ write_rule(char*, zval*)
    Rewrites a full property value by name. */
-static void write_rule(char *rule, zval *value TSRMLS_DC) {
+static void write_rule(char *rule, zval *value TSRMLS_DC)
+{
 	zend_update_static_property(fastium_inflector_ce, rule, strlen(rule), value TSRMLS_CC);
 }
+/* }}} */
 
-static void init_transliteration_rules(TSRMLS_D) {
+/* {{{ void init_transliteration_rules() */
+static void init_transliteration_rules(TSRMLS_D)
+{
 	zval *value;
 
 	MAKE_STD_ZVAL(value);
@@ -47,6 +51,7 @@ static void init_transliteration_rules(TSRMLS_D) {
 	write_rule("_transliteration", value TSRMLS_CC);
 	zval_ptr_dtor(&value);
 }
+/* }}} */
 
 /* {{{ _regex_enclose(char*, int)
    Enclose a string for preg matching. */
@@ -279,7 +284,7 @@ zend_module_entry fastium_module_entry = {
 PHP_MINIT_FUNCTION(fastium)
 {
 	zend_class_entry ce;
-	INIT_NS_CLASS_ENTRY(ce, FASTIUM_UTIL_NS, "Inflector", fastium_class_methods);
+	INIT_NS_CLASS_ENTRY(ce, FASTIUM_NS, "Inflector", fastium_class_methods);
 	fastium_inflector_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	#ifdef ZTS

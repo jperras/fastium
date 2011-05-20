@@ -4,7 +4,7 @@ Inflector::underscore()
 <?php if (!extension_loaded('fastium')) print "skip"; ?>
 --FILE--
 <?php
-use lithium\util\Inflector;
+use fastium\Inflector;
 echo Inflector::underscore('redBike') . "\n";
 echo Inflector::underscore('aReallyLongWordToUnderscore') . "\n";
 echo Inflector::underscore('some_word') . "\n";

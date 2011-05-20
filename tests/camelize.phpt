@@ -4,7 +4,7 @@ Inflector::camelize()
 <?php if (!extension_loaded('fastium')) print "skip"; ?>
 --FILE--
 <?php
-use lithium\util\Inflector;
+use fastium\Inflector;
 echo Inflector::camelize("lower cased word", false) . "\n";
 echo Inflector::camelize('red_bike') . "\n";
 echo Inflector::camelize('red bike') . "\n";
